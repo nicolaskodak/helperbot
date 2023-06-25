@@ -101,25 +101,19 @@ def parse_element(answer: str, element: str):
 ########### ===== main app ===== #############
 
 ### ===== Creating a login widget ===== ###
-config_path = '.streamlit/config.toml'
+config_path = '.streamlit/secrets.toml'
 if os.path.exists(config_path):
 	config = toml.load(open( config_path, 'r'))
-	authenticator = stauth.Authenticate(
+else:
+	config = dict(st.secrets.items())
+	
+authenticator = stauth.Authenticate(
 		config['credentials'],
 		config['cookie']['name'],
 		config['cookie']['key'],
 		config['cookie']['expiry_days'],
 		config['preauthorized']
-	)
-else:
-	authenticator = stauth.Authenticate(
-		st.secrets['credentials'],
-		st.secrets['cookie']['name'],
-		st.secrets['cookie']['key'],
-		st.secrets['cookie']['expiry_days'],
-		st.secrets['preauthorized']
-	)
-
+)
 
 name, authentication_status, username = authenticator.login('Login', 'main')
 
