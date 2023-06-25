@@ -138,7 +138,7 @@ if authentication_status:
 	with st.sidebar:
 		# serper_api_key = st.text_input('Serper API Key',key='langchain_search_api_key_serper')
 		# openai_api_key = st.text_input('OpenAI API Key',key='langchain_search_api_key_openai')
-		openai.api_key = os.environ.get("OPENAI_API_KEY")
+		openai.api_key = os.environ.get("OPENAI_API_KEY") or st.secrets["OPENAI_API_KEY"]
 
 	st.title("生產力小幫手")
 	# st.divider() 
