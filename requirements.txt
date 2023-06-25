@@ -33,3 +33,4 @@ urllib3>=1.26.15,<1.27.0
 google-api-python-client>=2.89.0,<2.90.0
 google-auth-httplib2>=0.1.0,<0.2.0
 httplib2>=0.22.0,<0.23.0
+streamlit-authenticator>=0.2.1,<0.3.0
