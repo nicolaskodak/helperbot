@@ -72,7 +72,7 @@ def get_response( chain, vectorstore, question: str, topn: int):
 
 
 chain = get_chain()
-vectorstore = get_vectorstore("/home/kota/nlp/knowbot/data/pain/vectorstore/vectorstore.v0.0.1.pkl")
+vectorstore = get_vectorstore("data/pain/vectorstore/vectorstore.pkl")
 
 import re
 url_pattern = re.compile(r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))")

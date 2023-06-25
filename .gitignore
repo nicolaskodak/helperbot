@@ -135,7 +135,6 @@ dmypy.json
 
 .DS_Store
 
-vectorstore.pkl
 langchain.readthedocs.io/
 
 __pycache__/
@@ -156,8 +155,6 @@ runs
 numpy_files/
 #log*
 #tmp*
-data/
-!data/.gitkeep
 .env
 *.env
 
