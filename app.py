@@ -10,10 +10,11 @@ import asyncio
 import streamlit as st
 import streamlit.components.v1 as components
 import streamlit_authenticator as stauth
-from langchain.utilities import GoogleSerperAPIWrapper
+# from langchain.utilities import GoogleSerperAPIWrapper
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chat_models import ChatOpenAI
-from langchain.agents import initialize_agent, Tool
-from langchain.agents import AgentType
+from langchain.agents import initialize_agent, Tool, AgentType
+from langchain.docstore.document import Document
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.llms import OpenAI
 from langchain.prompts.prompt import PromptTemplate
