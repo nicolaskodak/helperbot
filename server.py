@@ -59,9 +59,24 @@ async def startup_event():
     pass
 
 
-# @app.get("/")
-# async def get(request: Request):
-#     return templates.TemplateResponse("login.html", {"request": request})
+@app.get("/validate")
+def validate( client_id: str, redirect_uri: str, state: str = "f094a459-1d16-42d6-a709-c2b61ec53d60"):
+    """
+    Argument
+        - client_id: str
+            e.g. 'KW52IGf7UP0vyrTVc8xINk'
+        - redirect_uri: str
+            e.g. 'https://d890-122-116-55-147.ngrok.io'
+        - state: str (csrf token)
+            e.g. "f094a459-1d16-42d6-a709-c2b61ec53d60"
+    """
+    # return templates.TemplateResponse("login.html", {"request": request})
+    response_type = 'code'
+    scope = 'notify'
+    response_mode = 'form_post'
+    validation_url = f"https://notify-bot.line.me/oauth/authorize?response_type={response_type}&scope={scope}&response_mode={response_mode}&client_id={client_id}&redirect_uri={redirect_uri}&state={state}"
+    # return RedirectResponse(validation_url, status_code=status.HTTP_302_FOUND)
+    return validation_url
 
 
 # @manager.user_loader
