@@ -6,6 +6,8 @@ from langchain.agents import AgentType
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.llms import OpenAI
 from langchain.prompts.prompt import PromptTemplate
+import aiohttp
+import asyncio
 
 from postprocess import parse_url, parse_element
 
@@ -72,6 +74,15 @@ def get_answer( question: str) -> dict:
 	res["urls"] = urls
 	return res
 
+
+async def aget_answer(question):
+	async with aiohttp.ClientSession() as session:
+		async with session.post('http://127.0.0.1:9001/webqa', json = {'question': question}) as response:
+			print("Status:", response.status)
+			print("Content-type:", response.headers['content-type'])
+			content = await response.json()
+			print("Body:", content, "...")
+	return content
 
 print("Loading chain...")
 chain = get_chain()
