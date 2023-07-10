@@ -26,7 +26,6 @@ from model import get_answer
 from postprocess import parse_url, parse_element
 
 ########### ===== main app ===== #############
-
 async def aget_answer(question):
 	async with aiohttp.ClientSession() as session:
 		async with session.post('http://127.0.0.1:9001/webqa', json = {'question': question}) as response:
@@ -55,6 +54,8 @@ authenticator = stauth.Authenticate(
 )
 
 name, authentication_status, username = authenticator.login('Login', 'main')
+is_production = os.environ.get("PRODUCTION") or config["PRODUCTION"]
+print(f"is_production -> {is_production}")
 
 ### ===== Authenticating users ===== ###
 if authentication_status:
@@ -82,7 +83,6 @@ if authentication_status:
 		question = st.text_input("病患描述問題", placeholder="肩膀不太舒服，前幾天有去打球，會不會是韌帶拉傷？")
 
 		if question:
-			is_production = os.environ.get("PRODUCTION") or config["PRODUCTION"]
 			if is_production:
 				res = get_answer(question)
 			else:
