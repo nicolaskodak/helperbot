@@ -1,5 +1,8 @@
 import pickle as pkl
+import os
+import toml
 
+import openai
 from langchain.chat_models import ChatOpenAI
 from langchain.agents import initialize_agent, Tool
 from langchain.agents import AgentType
@@ -10,6 +13,18 @@ import aiohttp
 import asyncio
 
 from postprocess import parse_url, parse_element
+
+########### ===== config ===== #############
+config_path = '.streamlit/secrets.toml'
+if os.path.exists(config_path):
+	print(f"{config_path} exists")
+	config = toml.load(open( config_path, 'r'))
+else:
+	print( f"secrets -> {st.secrets}" )
+	config = dict(st.secrets.items())
+print( f"config -> {config}")
+openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
+########### ==================== #############
 
 
 def get_chain():
