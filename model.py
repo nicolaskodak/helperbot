@@ -24,6 +24,7 @@ else:
 	config = dict(st.secrets.items())
 print( f"config -> {config}")
 openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
+os.environ["OPENAI_API_KEY"] = openai.api_key
 ########### ==================== #############
 
 
