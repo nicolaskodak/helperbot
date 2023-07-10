@@ -22,8 +22,7 @@ import openai
 from dotenv import load_dotenv
 load_dotenv()
 
-########### ===== main app ===== #############
-### ===== Creating a login widget ===== ###
+########### ===== config ===== #############
 config_path = '.streamlit/secrets.toml'
 if os.path.exists(config_path):
 	print(f"{config_path} exists")
@@ -32,12 +31,11 @@ else:
 	print( f"secrets -> {st.secrets}" )
 	config = dict(st.secrets.items())
 print( f"config -> {config}")
+openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
+########### ==================== #############
 
-with st.sidebar:
-	# serper_api_key = st.text_input('Serper API Key',key='langchain_search_api_key_serper')
-	# openai_api_key = st.text_input('OpenAI API Key',key='langchain_search_api_key_openai')
-	openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 
+### ===== Creating a login widget ===== ###
 authenticator = stauth.Authenticate(
 		config['credentials'],
 		config['cookie']['name'],
@@ -45,10 +43,10 @@ authenticator = stauth.Authenticate(
 		config['cookie']['expiry_days'],
 		config['preauthorized']
 )
-
 name, authentication_status, username = authenticator.login('Login', 'main')
 is_production = os.environ.get("PRODUCTION") or config["settings"]["PRODUCTION"]
 print(f"is_production -> {is_production}")
+########### ==================== #############
 
 audio_input_dir = "data/audio"
 audio_output_dir = "data/audio"
