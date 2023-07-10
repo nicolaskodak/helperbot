@@ -22,14 +22,7 @@ import openai
 from dotenv import load_dotenv
 load_dotenv()
 
-from model import get_answer, aget_answer
-from postprocess import parse_url, parse_element
-from utils import split, compose_file_path, get_rewrite_chain, get_summarize_chain, sound2txt, text2summary	
-
-
 ########### ===== main app ===== #############
-
-
 ### ===== Creating a login widget ===== ###
 config_path = '.streamlit/secrets.toml'
 if os.path.exists(config_path):
@@ -39,6 +32,11 @@ else:
 	print( f"secrets -> {st.secrets}" )
 	config = dict(st.secrets.items())
 print( f"config -> {config}")
+
+with st.sidebar:
+	# serper_api_key = st.text_input('Serper API Key',key='langchain_search_api_key_serper')
+	# openai_api_key = st.text_input('OpenAI API Key',key='langchain_search_api_key_openai')
+	openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 
 authenticator = stauth.Authenticate(
 		config['credentials'],
@@ -59,6 +57,11 @@ transcript_output_dir = "data/transcripts"
 summary_input_dir = "data/summary"
 summary_output_dir = "data/summary"
 
+### === load model & utilities === ###
+from model import get_answer, aget_answer
+from postprocess import parse_url, parse_element
+from utils import split, compose_file_path, get_rewrite_chain, get_summarize_chain, sound2txt, text2summary	
+
 ### ===== Authenticating users ===== ###
 if authentication_status:
 	col1, col2, col3 , col4, col5, col6, col7 = st.columns(7)
@@ -69,11 +72,6 @@ if authentication_status:
 		# st.markdown(f"<p style='text-align: center;'> {name} </p>", unsafe_allow_html=True)
 		authenticator.logout('Logout', 'main')
 	# st.write(f'\n\n\n\n')
-	
-	with st.sidebar:
-		# serper_api_key = st.text_input('Serper API Key',key='langchain_search_api_key_serper')
-		# openai_api_key = st.text_input('OpenAI API Key',key='langchain_search_api_key_openai')
-		openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 
 	st.title("生產力小幫手")
 	# st.divider() 
@@ -122,7 +120,7 @@ if authentication_status:
 				## --- split --- ##
 				with st.spinner(f"reading from { audio_file_path}"):
 					multi_file_paths = split( in_file_path = audio_file_path, length = 10)
-					
+
 	with tab3: 
 		## --- upload file --- ##
 		transcript_file_path = ""
