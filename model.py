@@ -30,9 +30,11 @@ os.environ["OPENAI_API_KEY"] = openai.api_key
 
 def get_chain():
 	qa_template = '''
-	You will be provided with a document delimited by triple quotes and a question. 
+	As a doctor's assistant, you will be provided with a document delimited by triple quotes and a question. 
 	Your task is to answer the question in traditional Chinese using only the provided document and to extract the source(s) and passage(s) in the document used to answer the question. 
-	If the document does not contain information needed to answer this question then simply summarize the provided documents like "沒有找到最直接的答案，但找到以下資訊：..." 
+	The answer must be helpful and self-explanatory. Since you are a doctor's assistant, you are expected to answer the question in a professional manner.
+	Always use adverbs like probably, likely and possibly to avoid giving medical advice. Remind the patient to consult a doctor or visit a clinic if necessary.
+	If the document does not contain information needed to answer this question then simply summarize the provided documents like "沒有從部落格中找到合適回答的內容，但找到以下資訊：..." 
 	If an answer to the question is provided, the source(s) must be annotated as complete URL(s) at the end of the answer, and its format is as follows: 【``Source``: ......】.
 
 
@@ -45,7 +47,7 @@ def get_chain():
 	Answer:'''
 
 	qa_prompt = PromptTemplate(template = qa_template, input_variables=["context", "question"])
-	qa_llm = OpenAI(temperature=0, max_tokens = 1024)
+	qa_llm = OpenAI(temperature=0, max_tokens = 1536)
 
 	chain = load_qa_with_sources_chain( qa_llm, prompt = qa_prompt, document_variable_name = "context", chain_type="stuff")
 

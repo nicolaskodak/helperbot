@@ -238,12 +238,12 @@ if authentication_status:
 		summary_file_path = ""
 		with st.form("upload-summarize-clip-form", clear_on_submit=True):
 			summary_uploaded_file = st.file_uploader("Upload a transcript or a document (txt file)", type="txt")
-			submitted = st.form_submit_button("UPLOAD")
+			summarize_submitted = st.form_submit_button("UPLOAD")
 			
-			if submitted and summary_uploaded_file and instruction and not openai.api_key:
+			if summarize_submitted and summary_uploaded_file and instruction and not openai.api_key:
 				st.info("Please add your OPENAI API KEY to environment to continue.")
 				
-			if submitted and summary_uploaded_file and instruction and openai.api_key:
+			if summarize_submitted and summary_uploaded_file and instruction and openai.api_key:
 				## -- read file -- ##
 				article = summary_uploaded_file.read().decode()
 				
