@@ -33,8 +33,8 @@ else:
 	print( f"secrets -> {st.secrets}" )
 	config = dict(st.secrets.items())
 print( f"config -> {config}")
-for k,v in config.items():
-	st.session_state[k] = v
+for k in ['name', 'authentication_status', 'username' ]:
+	st.session_state[k] = None
 print(f"session state -> {st.session_state}")
 openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 os.environ["OPENAI_API_KEY"] = openai.api_key
