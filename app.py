@@ -4,6 +4,7 @@ import pickle as pkl
 import re
 import yaml
 import toml
+import logging
 
 import aiohttp
 import asyncio
@@ -26,16 +27,18 @@ load_dotenv()
 
 ########### ===== config ===== #############
 config_path = '.streamlit/secrets.toml'
+# print(f" os.listdir('.') -> { os.listdir('.')}")
+
 if os.path.exists(config_path):
-	print(f"{config_path} exists")
+	logging.info(f"{config_path} exists")
 	config = toml.load(open( config_path, 'r'))
 else:
-	print( f"secrets -> {st.secrets}" )
+	logging.info( f"secrets -> {st.secrets}" )
 	config = dict(st.secrets.items())
 print( f"config -> {config}")
 for k in ['name', 'authentication_status', 'username' ]:
 	st.session_state[k] = None
-print(f"session state -> {st.session_state}")
+logging.info(f"session state -> {st.session_state}")
 openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 os.environ["OPENAI_API_KEY"] = openai.api_key
 ########### ==================== #############
@@ -51,7 +54,7 @@ authenticator = stauth.Authenticate(
 )
 name, authentication_status, username = authenticator.login('Login', 'main')
 is_production = os.environ.get("PRODUCTION") or config["settings"]["PRODUCTION"]
-print(f"is_production -> {is_production}")
+logging.info(f"is_production -> {is_production}")
 ########### ==================== #############
 
 audio_input_dir = "data/audio"

@@ -3,6 +3,7 @@ import argparse
 import time
 import math
 import toml
+import logging
 
 from pydub import AudioSegment
 import openai
@@ -26,12 +27,12 @@ import streamlit as st
 ########### ===== config ===== #############
 config_path = '.streamlit/secrets.toml'
 if os.path.exists(config_path):
-	print(f"{config_path} exists")
+	print(f"[utils] {config_path} exists")
 	config = toml.load(open( config_path, 'r'))
 else:
-	print( f"secrets -> {st.secrets}" )
+	print( f"[utils] secrets -> {st.secrets}" )
 	config = dict(st.secrets.items())
-print( f"config -> {config}")
+print( f"[utils] config -> {config}")
 for k in ['name', 'authentication_status', 'username' ]:
 	st.session_state[k] = None
 
