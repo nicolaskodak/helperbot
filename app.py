@@ -77,7 +77,7 @@ if authentication_status:
 	# st.divider() 
 
 
-	tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["回覆小幫手", "切割錄音檔", "錄音轉文字", "文字改寫", "總結摘要", "錄音檔摘要"])
+	tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["疼痛小幫手", "切割錄音檔", "錄音轉文字", "文字改寫", "總結摘要", "錄音檔摘要"])
 
 	with tab1:
 		question = st.text_input("病患描述問題", placeholder="肩膀不太舒服，前幾天有去打球，會不會是韌帶拉傷？")
@@ -90,7 +90,7 @@ if authentication_status:
 
 			urls = res['urls']
 
-			st.write("建議回覆")
+			st.write("【建議回覆】")
 			st.write(res["output_text"])
 			
 
@@ -98,7 +98,7 @@ if authentication_status:
 			html = ""
 			if len(urls)>0:
 				for url in urls:
-					html += f"""<br><a href=\"{url}\">開啟網頁：{url}</a>"""
+					html += f"""<br><a href=\"{url}\" style="color:gray">開啟網頁：{url}</a>"""
 			html = f"<div>{html}</div>"
 			components.html( html, height=600, scrolling=True)
 

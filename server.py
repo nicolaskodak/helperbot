@@ -114,6 +114,7 @@ def webqa(request: Question, background_tasks: BackgroundTasks):
     """
     print(f"received { request.question }" )
     res = get_answer( request.question )
+    print(f"webqa res -> {res}")
     return res
 
 

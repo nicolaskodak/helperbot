@@ -76,7 +76,7 @@ def get_response( chain, vectorstore, question: str, topn: int):
 	"""
 	rele_docs = vectorstore.similarity_search(query = question, k = topn)
 	res = chain({"input_documents": rele_docs, "question": question}, return_only_outputs=False)
-	# print( res )
+	print( f"search res -> {res}" )
 	return res
 
 
@@ -86,20 +86,30 @@ def get_answer( question: str) -> dict:
 		question: str
 	"""
 	res = get_response( chain, vectorstore, question, topn=2)
-	res["output_text"] = res["output_text"].replace("】", " 】").replace("【", "\n【 ")
-	
-	urls = parse_url( res["output_text"] )
-	res["urls"] = urls
+	try:
+		res["output_text"] = res["output_text"].replace("】", " 】").replace("【", "\n【 ")
+		res["input_documents"] = [ doc.page_content for doc in res["input_documents"]]
+	except Exception as e:
+		print( f"#ERROR: e is {e}, res is {res}")
+
+	try:
+		# urls = parse_url( res["output_text"] )
+		# res["urls"] = urls
+		rev_check_docs = vectorstore.similarity_search(query = res["output_text"], k = 2)
+		res["urls"] = [rev_check_docs[0].metadata['url']]
+	except Exception as e:
+		print( f"#ERROR: e is {e}, res is {res}")
+	print(f"parsed res -> {res}")
 	return res
 
 
 async def aget_answer(question):
 	async with aiohttp.ClientSession() as session:
 		async with session.post('http://127.0.0.1:9001/webqa', json = {'question': question}) as response:
-			print("Status:", response.status)
-			print("Content-type:", response.headers['content-type'])
+			print( f"Status: {response.status}")
+			print( f"Content-type: {response.headers['content-type']}")
 			content = await response.json()
-			print("Body:", content, "...")
+			print( f"Body: {content}")
 	return content
 
 print("Loading chain...")
