@@ -16,6 +16,7 @@ from langchain.docstore.document import Document
 from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.chat_models import ChatOpenAI
 from langchain.agents import initialize_agent, Tool, AgentType
+import streamlit as st
 
 # from dotenv import load_dotenv
 # load_dotenv()
@@ -31,6 +32,9 @@ else:
 	print( f"secrets -> {st.secrets}" )
 	config = dict(st.secrets.items())
 print( f"config -> {config}")
+for k in ['name', 'authentication_status', 'username' ]:
+	st.session_state[k] = None
+
 openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 os.environ["OPENAI_API_KEY"] = openai.api_key
 ########### ==================== #############
