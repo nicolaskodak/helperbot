@@ -1,12 +1,16 @@
 import os
 import time
 import pickle as pkl
-import re
-import yaml
+# import re
+# import yaml
 import toml
 import logging
+from datetime import date
 
-import aiohttp
+# import aiohttp
+import pandas as pd
+from pytrends.request import TrendReq
+import serpapi
 import asyncio
 import streamlit as st
 import streamlit.components.v1 as components
@@ -25,6 +29,7 @@ import openai
 from dotenv import load_dotenv
 load_dotenv()
 
+
 ########### ===== config ===== #############
 config_path = '.streamlit/secrets.toml'
 # print(f" os.listdir('.') -> { os.listdir('.')}")
@@ -41,6 +46,11 @@ for k in ['name', 'authentication_status', 'username' ]:
 logging.info(f"session state -> {st.session_state}")
 openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 os.environ["OPENAI_API_KEY"] = openai.api_key
+
+
+secret_key = os.environ.get('SERP_APIKEY')
+serp_client = serpapi.Client(api_key=secret_key)
+pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
 ########### ==================== #############
 
 
@@ -56,6 +66,30 @@ name, authentication_status, username = authenticator.login('Login', 'main')
 is_production = os.environ.get("PRODUCTION") or config["settings"]["PRODUCTION"]
 logging.info(f"is_production -> {is_production}")
 ########### ==================== #############
+
+
+secret_key = os.environ.get('SERP_APIKEY')
+serp_client = serpapi.Client(api_key=secret_key)
+pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
+
+@st.cache_data
+def get_trending_searches(today) -> pd.DataFrame:
+    """
+    Get trending searches from Google Trends
+    """
+    results = pytrends.trending_searches(pn='taiwan')
+    return results
+
+@st.cache_data
+def get_search_results(query: str, today) -> dict:
+    """
+    Get search results from serpapi.com
+    """
+    results = serp_client.search({
+        'engine': 'google',
+        'q': query,
+    })
+    return results.as_dict()
 
 audio_input_dir = "data/audio"
 audio_output_dir = "data/audio"
@@ -84,7 +118,7 @@ if authentication_status:
 	# st.divider() 
 
 
-	tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["疼痛小幫手", "切割錄音檔", "錄音轉文字", "文字改寫", "總結摘要", "錄音檔摘要"])
+	tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["疼痛小幫手", "切割錄音檔", "錄音轉文字", "文字改寫", "總結摘要", "錄音檔摘要", "火熱話題"])
 
 	with tab1:
 		question = st.text_input("病患描述問題", placeholder="肩膀不太舒服，前幾天有去打球，會不會是韌帶拉傷？")
@@ -367,6 +401,18 @@ if authentication_status:
 						st.divider()
 						summary_text += f"{summary}\n"
 						print( f"[summary] Elapsed time: {time.time() - start_time} seconds")
+	with tab7:
+		today = date.today()
+		topn_results = 5
+		topn_articles = 3
+		trend_results = get_trending_searches(today)
+		highlights = []
+		for query in trend_results[0].values[:topn_results]:
+			search_results = get_search_results(query, today)
+			highlights += search_results['organic_results'][:topn_articles]
+		highlights = pd.DataFrame(highlights)
+		st.dataframe(highlights[['title', 'link', 'snippet', 'source']])
+
 
 elif authentication_status == False:
 	st.error('Username/password is incorrect')
