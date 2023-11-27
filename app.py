@@ -49,8 +49,10 @@ os.environ["OPENAI_API_KEY"] = openai.api_key
 
 
 secret_key = os.environ.get('SERP_APIKEY') or config["settings"]["SERP_APIKEY"]
+logging.info(f"serp api key -> {secret_key}")
 serp_client = serpapi.Client(api_key=secret_key)
 pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
+
 ########### ==================== #############
 
 
