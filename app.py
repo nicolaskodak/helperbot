@@ -85,6 +85,7 @@ def get_search_results( secret_key: str, query: str, today: str) -> dict:
     """
     Get search results from serpapi.com
     """
+    print(f"secret_key -> {secret_key[-4:]}, query -> {query}, today -> {today}")
     serp_client=serpapi.Client(api_key=secret_key)
     results = serp_client.search({
         'engine': 'google',
