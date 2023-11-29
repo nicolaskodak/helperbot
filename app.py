@@ -78,7 +78,7 @@ def get_trending_searches(today) -> pd.DataFrame:
     return results
 
 @st.cache_data
-def get_search_results( query: str, today: str) -> dict:
+def get_search_results( secret_key, query: str, today: str) -> dict:
     """
     Get search results from serpapi.com
     """
