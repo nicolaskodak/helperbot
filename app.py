@@ -50,7 +50,7 @@ os.environ["OPENAI_API_KEY"] = openai.api_key
 
 secret_key = os.environ.get('SERP_APIKEY') or config["settings"]["SERP_APIKEY"]
 logging.info(f"serp api key -> {secret_key}")
-serp_client = serpapi.Client(api_key=secret_key)
+# serp_client = serpapi.Client(api_key=secret_key)
 pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
 
 ########### ==================== #############
@@ -69,9 +69,7 @@ is_production = os.environ.get("PRODUCTION") or config["settings"]["PRODUCTION"]
 logging.info(f"is_production -> {is_production}")
 ########### ==================== #############
 
-
 secret_key = os.environ.get('SERP_APIKEY')
-serp_client = serpapi.Client(api_key=secret_key)
 pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
 
 @st.cache_data
@@ -83,15 +81,17 @@ def get_trending_searches(today) -> pd.DataFrame:
     return results
 
 @st.cache_data
-def get_search_results(query: str, today) -> dict:
+def get_search_results( secret_key: str, query: str, today: str) -> dict:
     """
     Get search results from serpapi.com
     """
+    serp_client=serpapi.Client(api_key=secret_key)
     results = serp_client.search({
         'engine': 'google',
         'q': query,
     })
     return results.as_dict()
+
 
 audio_input_dir = "data/audio"
 audio_output_dir = "data/audio"
@@ -405,12 +405,12 @@ if authentication_status:
 						print( f"[summary] Elapsed time: {time.time() - start_time} seconds")
 	with tab7:
 		today = date.today()
-		topn_results = 5
-		topn_articles = 3
+		topn_results = 3
+		topn_articles = 1
 		trend_results = get_trending_searches(today)
 		highlights = []
 		for query in trend_results[0].values[:topn_results]:
-			search_results = get_search_results(query, today)
+			search_results = get_search_results( secret_key, query, str(today) )
 			highlights += search_results['organic_results'][:topn_articles]
 		highlights = pd.DataFrame(highlights)
 		st.dataframe(highlights[['title', 'link', 'snippet', 'source']])
