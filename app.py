@@ -47,7 +47,6 @@ logging.info(f"session state -> {st.session_state}")
 openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 os.environ["OPENAI_API_KEY"] = openai.api_key
 
-
 secret_key = os.environ.get('SERP_APIKEY') or config["settings"]["SERP_APIKEY"]
 logging.info(f"serp api key -> {secret_key}")
 # serp_client = serpapi.Client(api_key=secret_key)
@@ -69,8 +68,6 @@ is_production = os.environ.get("PRODUCTION") or config["settings"]["PRODUCTION"]
 logging.info(f"is_production -> {is_production}")
 ########### ==================== #############
 
-secret_key = os.environ.get('SERP_APIKEY')
-pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
 
 @st.cache_data
 def get_trending_searches(today) -> pd.DataFrame:
@@ -81,7 +78,7 @@ def get_trending_searches(today) -> pd.DataFrame:
     return results
 
 @st.cache_data
-def get_search_results( secret_key: str, query: str, today: str) -> dict:
+def get_search_results( query: str, today: str) -> dict:
     """
     Get search results from serpapi.com
     """
