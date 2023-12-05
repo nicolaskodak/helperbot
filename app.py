@@ -403,36 +403,39 @@ if authentication_status:
 						summary_text += f"{summary}\n"
 						print( f"[summary] Elapsed time: {time.time() - start_time} seconds")
 	with tab7:
-		# today = date.today()
-		# topn_results = 3
-		# topn_articles = 1
-		# trend_results = get_trending_searches(today)
-		# highlights = []
-		# for query in trend_results[0].values[:topn_results]:
-		# 	search_results = get_search_results( secret_key, query, str(today) )
-		# 	highlights += search_results['organic_results'][:topn_articles]
-		# highlights = pd.DataFrame(highlights)
-		params = {
-			"api_key": secret_key,
-			"engine": "google_trends_trending_now",
-			"frequency": "daily",
-			"geo": "TW",
-			"hl": "zh-tw"
-		}
-		search = GoogleSearch(params)
-		results = search.get_dict()
-		content = []
-		for ds in results['daily_searches']:
-			for s in ds['searches']:
-				q = s['query']
-				if 'articles' in s and len(s['articles'])>0:
-					link = s['articles'][0]['link']
-					title = s['articles'][0]['title']
-					snippet = s['articles'][0]['snippet']
-				else:
-					continue
-				content.append({'query': q, 'title': title, 'snippet': snippet, 'link': link})
-		st.dataframe(pd.DataFrame(content))
+		if False:
+			# today = date.today()
+			# topn_results = 3
+			# topn_articles = 1
+			# trend_results = get_trending_searches(today)
+			# highlights = []
+			# for query in trend_results[0].values[:topn_results]:
+			# 	search_results = get_search_results( secret_key, query, str(today) )
+			# 	highlights += search_results['organic_results'][:topn_articles]
+			# highlights = pd.DataFrame(highlights)
+			params = {
+				"api_key": secret_key,
+				"engine": "google_trends_trending_now",
+				"frequency": "daily",
+				"geo": "TW",
+				"hl": "zh-tw"
+			}
+			search = GoogleSearch(params)
+			results = search.get_dict()
+			content = []
+			for ds in results['daily_searches']:
+				for s in ds['searches']:
+					q = s['query']
+					if 'articles' in s and len(s['articles'])>0:
+						link = s['articles'][0]['link']
+						title = s['articles'][0]['title']
+						snippet = s['articles'][0]['snippet']
+					else:
+						continue
+					content.append({'query': q, 'title': title, 'snippet': snippet, 'link': link})
+			st.dataframe(pd.DataFrame(content))
+		else:
+			st.write("Coming soon...")
 
 
 elif authentication_status == False:
