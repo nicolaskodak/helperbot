@@ -3,14 +3,17 @@ import os
 import toml
 
 import openai
-from langchain.chat_models import ChatOpenAI
-from langchain.agents import initialize_agent, Tool
-from langchain.agents import AgentType
+# from langchain.chat_models import ChatOpenAI
+from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
+# from langchain.agents import initialize_agent, Tool
+# from langchain.agents import AgentType
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
-from langchain.llms import OpenAI
+# from langchain.llms import OpenAI
 from langchain.prompts.prompt import PromptTemplate
 import aiohttp
 import asyncio
+from langchain.vectorstores.faiss import FAISS
+# from langchain.embeddings.openai import OpenAIEmbeddings
 
 from postprocess import parse_url, parse_element
 
@@ -47,7 +50,7 @@ def get_chain():
 	Answer:'''
 
 	qa_prompt = PromptTemplate(template = qa_template, input_variables=["context", "question"])
-	qa_llm = OpenAI(temperature=0, max_tokens = 1536)
+	qa_llm = OpenAI(temperature=0, model = "gpt-3.5-turbo-instruct", max_tokens = 1536)
 
 	chain = load_qa_with_sources_chain( qa_llm, prompt = qa_prompt, document_variable_name = "context", chain_type="stuff")
 
@@ -115,4 +118,5 @@ async def aget_answer(question):
 print("Loading chain...")
 chain = get_chain()
 print("Loading vectorstore...")
-vectorstore = get_vectorstore("data/pain/vectorstore/vectorstore.pkl")
+# vectorstore = get_vectorstore("data/pain/vectorstore/vectorstore.pkl")
+vectorstore = FAISS.load_local("data/pain/vectorstore/vectorstore.pkl", OpenAIEmbeddings(), allow_dangerous_deserialization = True )

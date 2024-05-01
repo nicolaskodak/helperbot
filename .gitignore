@@ -165,9 +165,9 @@ creds/*
 !creds/.gitkeep
 config.yml
 config.toml
-audio/*
-!audio/.gitkeep
-transcripts/*
-!transcripts/.gitkeep
-summary/*
-!summary/.gitkeep
+data/audio/*
+!data/audio/.gitkeep
+data/transcripts/*
+!data/transcripts/.gitkeep
+data/summary/*
+!data/summary/.gitkeep

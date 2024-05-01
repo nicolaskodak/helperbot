@@ -1,1 +1,1 @@
-vectorstore.blog.pkl
+vectorstore.v0.0.3.pkl

@@ -11,7 +11,7 @@ from datetime import date
 import pandas as pd
 from pytrends.request import TrendReq
 import serpapi
-from serpapi import GoogleSearch
+# from serpapi import GoogleSearch
 import asyncio
 import streamlit as st
 import streamlit.components.v1 as components
@@ -19,12 +19,12 @@ import streamlit_authenticator as stauth
 import langchain
 # from langchain.utilities import GoogleSerperAPIWrapper
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.chat_models import ChatOpenAI
-from langchain.agents import initialize_agent, Tool, AgentType
+# from langchain.chat_models import ChatOpenAI
+# from langchain.agents import initialize_agent, Tool, AgentType
 from langchain.docstore.document import Document
-from langchain.chains.qa_with_sources import load_qa_with_sources_chain
-from langchain.llms import OpenAI
-from langchain.prompts.prompt import PromptTemplate
+# from langchain.chains.qa_with_sources import load_qa_with_sources_chain
+# from langchain.llms import OpenAI
+# from langchain.prompts.prompt import PromptTemplate
 import openai
 
 from dotenv import load_dotenv
@@ -41,17 +41,20 @@ if os.path.exists(config_path):
 else:
 	logging.info( f"secrets -> {st.secrets}" )
 	config = dict(st.secrets.items())
-print( f"config -> {config}")
+# print( f"config -> {config}")
 for k in ['name', 'authentication_status', 'username' ]:
 	st.session_state[k] = None
-logging.info(f"session state -> {st.session_state}")
+if 'uploaded' not in st.session_state:
+    st.session_state['uploaded'] = False
+# logging.info(f"session state -> {st.session_state}")
 openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
 os.environ["OPENAI_API_KEY"] = openai.api_key
 
 secret_key = os.environ.get('SERP_APIKEY') or config["settings"]["SERP_APIKEY"]
-logging.info(f"serp api key -> {secret_key}")
+# logging.info(f"serp api key -> {secret_key}")
+
 # serp_client = serpapi.Client(api_key=secret_key)
-pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
+# pytrends = TrendReq(hl='zh-TW', tz=480, timeout=(10,25), retries=2, backoff_factor=0.1, requests_args={'verify':False})
 
 ########### ==================== #############
 
@@ -69,27 +72,26 @@ is_production = os.environ.get("PRODUCTION") or config["settings"]["PRODUCTION"]
 logging.info(f"is_production -> {is_production}")
 ########### ==================== #############
 
+# @st.cache_data
+# def get_trending_searches(today) -> pd.DataFrame:
+#     """
+#     Get trending searches from Google Trends
+#     """
+#     results = pytrends.trending_searches(pn='taiwan')
+#     return results
 
-@st.cache_data
-def get_trending_searches(today) -> pd.DataFrame:
-    """
-    Get trending searches from Google Trends
-    """
-    results = pytrends.trending_searches(pn='taiwan')
-    return results
-
-@st.cache_data
-def get_search_results( secret_key, query: str, today: str) -> dict:
-    """
-    Get search results from serpapi.com
-    """
-    print(f"secret_key -> {secret_key[-4:]}, query -> {query}, today -> {today}")
-    serp_client=serpapi.Client(api_key=secret_key)
-    results = serp_client.search({
-        'engine': 'google',
-        'q': query,
-    })
-    return results.as_dict()
+# @st.cache_data
+# def get_search_results( secret_key, query: str, today: str) -> dict:
+#     """
+#     Get search results from serpapi.com
+#     """
+#     print(f"secret_key -> {secret_key[-4:]}, query -> {query}, today -> {today}")
+#     serp_client=serpapi.Client(api_key=secret_key)
+#     results = serp_client.search({
+#         'engine': 'google',
+#         'q': query,
+#     })
+#     return results.as_dict()
 
 
 audio_input_dir = "data/audio"
@@ -171,7 +173,7 @@ if authentication_status:
 			uploaded_file = st.file_uploader("Upload an audio clip", key = 'transcribe_audio', type=["wav", "mp3", "m4a"])
 			submitted = st.form_submit_button("UPLOAD")
 			if submitted and uploaded_file:
-				## -- read file -- ##
+				# -- read file -- ##
 				sound_bytes = uploaded_file.getvalue() # bytes
 				file_obj = compose_file_path( input_file_path=uploaded_file.name, output_prefix = None, output_dir = audio_input_dir, output_ext = None)
 				audio_file_path = file_obj['output_file_path']
@@ -179,7 +181,7 @@ if authentication_status:
 				with open( audio_file_path, "wb") as f:
 					f.write(sound_bytes)
 
-				## --- transcribe --- ##		
+				# --- transcribe --- ##		
 				start_time = time.time()
 				st.divider()	
 				file_obj = compose_file_path( audio_file_path, output_prefix = None, output_dir = transcript_input_dir, output_ext = "txt")
@@ -188,7 +190,7 @@ if authentication_status:
 					print(f"{transcript_file_path} already exists. will skip this file.")	 
 				with st.spinner(f"written transcript to { transcript_file_path}"):
 					transcript = sound2txt( audio_file_path, transcript_file_path)
-					st.write(transcript['text'])
+					st.write(transcript.text)
 				print( f"Elapsed time: {time.time() - start_time} seconds")
 			transcripted = 1
 		if transcripted and os.path.exists(transcript_file_path):
@@ -323,85 +325,92 @@ if authentication_status:
 				st.download_button('下載摘要', f, file_name = os.path.basename(summary_file_path), key = f"download-button-{summary_file_path}")  # Defaults to 'text/plain'
 
 	with tab6: 
-		# summarize_chain = load_summarize_chain()
-		# data/audio/GMT20230613-051643_Recording.m4a_0.m4a
-		# with open("data/transcripts/GMT20230613-051643_Recording.m4a_0.txt") as f:
-		# 	transcript = f.read()
-		# st.markdown( f'<p style="background-color: rgba(100,100,200,.2);">{transcript}</p>', unsafe_allow_html=True)
-
 		## --- upload file --- ##
+		rewrites = []
+		filename = None
 		with st.form("end-to-end-upload-audio-form", clear_on_submit=True):
 			uploaded_file = st.file_uploader("Upload an audio clip", key='end_to_end', type=["wav", "mp3", "m4a"])
 			submitted = st.form_submit_button("UPLOAD")
 			if submitted and uploaded_file:
-				## -- read file -- ##
-				with st.spinner(f"uploaded { uploaded_file.name}"):
-					sound_bytes = uploaded_file.getvalue() # bytes
-					audio_file_path = compose_file_path( input_file_path = uploaded_file.name, output_prefix = None, output_dir = audio_input_dir, output_ext = None)['output_file_path']
-					print( f"audio_file_path: {audio_file_path}")
-					with open( audio_file_path, "wb") as f:
-						f.write(sound_bytes)
-					## --- split --- ##		
-					audio_file_paths = split( in_file_path = audio_file_path, length = 10)
+				# if False: # st.session_state['uploaded']:
+				# 	st.warning("uploaded")
+				# else:
+				if submitted and uploaded_file:
+					st.session_state['uploaded'] = True
+					## -- read file -- ##
+					with st.spinner(f"uploaded { uploaded_file.name}"):
+						sound_bytes = uploaded_file.getvalue() # bytes
+						filename = uploaded_file.name
+						audio_file_path = compose_file_path( input_file_path =filename, output_prefix = None, output_dir = audio_input_dir, output_ext = None)['output_file_path']
+						print( f"audio_file_path: {audio_file_path}")
+						with open( audio_file_path, "wb") as f:
+							f.write(sound_bytes)
+						## --- split --- ##		
+						audio_file_paths = split( in_file_path = audio_file_path, length = 10)
 
-				## --- transcribe --- ##		
-				st.write("### Transcribing audio")
-				with st.spinner(f"transcribe { ', '.join(audio_file_paths) }"):
-					transcripts = []
-					transcript_file_paths = []
-					for i, audio_file_path in enumerate(audio_file_paths):
-						start_time = time.time()
-						
-						transcript_file_path = compose_file_path( input_file_path = audio_file_path, output_prefix = None, output_dir = transcript_input_dir, output_ext = "txt")['output_file_path']
-						transcript_file_paths.append(transcript_file_path)
+					## --- transcribe --- ##		
+					st.write("### Transcribing audio")
+					with st.spinner(f"transcribe { ', '.join(audio_file_paths) }"):
+						transcripts = []
+						transcript_file_paths = []
+						for i, audio_file_path in enumerate(audio_file_paths):
+							start_time = time.time()
+							
+							transcript_file_path = compose_file_path( input_file_path = audio_file_path, output_prefix = None, output_dir = transcript_input_dir, output_ext = "txt")['output_file_path']
+							transcript_file_paths.append(transcript_file_path)
 
-						st.write(f"Trascribing {i}-th clip out of total {len(audio_file_paths)} clips.")
-						transcript = sound2txt( audio_file_path, transcript_file_path)
+							st.write(f"Trascribing {i}-th clip out of total {len(audio_file_paths)} clips.")
+							transcript = sound2txt( audio_file_path, transcript_file_path)
 
-						st.write(transcript['text'][:50])
-						st.divider()
-						transcripts.append( transcript['text'])
-						print( f"[transcription] Elapsed time: {time.time() - start_time} seconds")
-					# print( f"Transcript: {transcript}")
-				
-				## --- Rewrite --- ##
-				st.write("### Rewritten transcript")
-				with st.spinner(f"rewritten { ','.join(transcript_file_paths)}"):
-					text_splitter = RecursiveCharacterTextSplitter(
-						chunk_size=1024,
-						chunk_overlap=20,
-					)
-					rewrite_instruction = "correct typos, remove redundant sentences/words and add punctuations"
-					rewrite_file_paths = []
-					rewrites = []
-					for i, blob in enumerate(zip(transcript_file_paths, transcripts)):
-						transcript_file_path, transcript = blob
-						paragraphs = text_splitter.split_text( "\n".join(transcript) )
-						rewrite_file_path = compose_file_path( input_file_path = transcript_file_path, output_prefix = "rewrite", output_dir = transcript_output_dir, output_ext = "txt")['output_file_path']
-						rewrite_file_paths.append(rewrite_file_path)
-						st.write(f"Rewriting {i}-th transcript out of total {len(transcript_file_paths)} transcripts.")
-						for paragraph in paragraphs: 
-							try:
-								res = rewrite_chain({"functions": rewrite_instruction, "paragraph": paragraph}, return_only_outputs = True)
-							except Exception as e:
-								print(e)
-								continue
-							with open( rewrite_file_path, "a") as f:
-								f.write(res["text"])
-							st.write(res["text"][:50])
+							st.write(transcript.text[:50])
 							st.divider()
+							transcripts.append( transcript.text)
+							print( f"[transcription] Elapsed time: {time.time() - start_time} seconds")
+						# print( f"Transcript: {transcript}")
+					
+					## --- Rewrite --- ##
+					st.write("### Rewritten transcript")
+					with st.spinner(f"rewritten { ','.join(transcript_file_paths)}"):
+						text_splitter = RecursiveCharacterTextSplitter(
+							chunk_size=1024,
+							chunk_overlap=20,
+						)
+						rewrite_instruction = "correct typos, remove redundant sentences/words and add punctuations"
+						rewrite_file_paths = []
+						rewrites = []
+						for i, blob in enumerate(zip(transcript_file_paths, transcripts)):
+							transcript_file_path, transcript = blob
+							paragraphs = text_splitter.split_text( "\n".join(transcript) )
+							rewrite_file_path = compose_file_path( input_file_path = transcript_file_path, output_prefix = "rewrite", output_dir = transcript_output_dir, output_ext = "txt")['output_file_path']
+							rewrite_file_paths.append(rewrite_file_path)
+							st.write(f"Rewriting {i}-th transcript out of total {len(transcript_file_paths)} transcripts.")
+							for paragraph in paragraphs: 
+								try:
+									res = rewrite_chain({"functions": rewrite_instruction, "paragraph": paragraph}, return_only_outputs = True)
+								except Exception as e:
+									print(f"#ERROR -> {e}")
+									continue
+								with open( rewrite_file_path, "a") as f:
+									f.write(res["text"])
+								rewrites.append(res["text"])
+								st.write( f"{res['text'][:50]} (cropped)")
 
-				## --- summarize --- ##
-				with st.spinner(f"summarize { ', '.join(rewrite_file_paths) }"):
-					summary_text = ""
-					for rewrite, rewrite_file_path in zip( rewrites, rewrite_file_paths):
-						start_time = time.time()
-						summary_file_path = compose_file_path( input_file_path = rewrite_file_path, output_prefix = "summary", output_dir = summary_output_dir, output_ext = "txt")['output_file_path']
-						summary = text2summary( rewrite, summary_file_path, instruction = "give helpful and concise summary with action items in traditional chinese.")
-						st.write(summary)
-						st.divider()
-						summary_text += f"{summary}\n"
-						print( f"[summary] Elapsed time: {time.time() - start_time} seconds")
+					## --- summarize --- ##
+					st.divider()
+					st.write("### Summary")
+					with st.spinner(f"summarize { ', '.join(rewrite_file_paths) }"):
+						summary_text = ""
+						for rewrite, rewrite_file_path in zip( rewrites, rewrite_file_paths):
+							start_time = time.time()
+							summary_file_path = compose_file_path( input_file_path = rewrite_file_path, output_prefix = "summary", output_dir = summary_output_dir, output_ext = "txt")['output_file_path']
+							summary = text2summary( rewrite, summary_file_path, instruction = "give helpful and concise summary with action items in traditional chinese.")
+							st.write(summary)
+							st.divider()
+							summary_text += f"{summary}\n"
+							print( f"[summary] Elapsed time: {time.time() - start_time} seconds")
+
+		st.download_button(label="Download transcript", data="\n".join(rewrites), file_name = filename)
+
 	with tab7:
 		if False:
 			# today = date.today()
@@ -413,6 +422,7 @@ if authentication_status:
 			# 	search_results = get_search_results( secret_key, query, str(today) )
 			# 	highlights += search_results['organic_results'][:topn_articles]
 			# highlights = pd.DataFrame(highlights)
+   			"""
 			params = {
 				"api_key": secret_key,
 				"engine": "google_trends_trending_now",
@@ -436,7 +446,7 @@ if authentication_status:
 			st.dataframe(pd.DataFrame(content))
 		else:
 			st.write("Coming soon...")
-
+		"""
 
 elif authentication_status == False:
 	st.error('Username/password is incorrect')

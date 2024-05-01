@@ -7,15 +7,16 @@ import logging
 
 from pydub import AudioSegment
 import openai
-from langchain.llms import OpenAI
+# from langchain.llms import OpenAI
+# from langchain_community.llms import OpenAI
+from langchain_openai import OpenAI, OpenAIEmbeddings, ChatOpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain import LLMChain
 from langchain.prompts.prompt import PromptTemplate
 from langchain.chains.summarize import load_summarize_chain
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.docstore.document import Document
-from langchain.utilities import GoogleSerperAPIWrapper
-from langchain.chat_models import ChatOpenAI
+# from langchain.chat_models import ChatOpenAI
 from langchain.agents import initialize_agent, Tool, AgentType
 import streamlit as st
 
@@ -25,20 +26,23 @@ import streamlit as st
 # openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 ########### ===== config ===== #############
-config_path = '.streamlit/secrets.toml'
-if os.path.exists(config_path):
-	print(f"[utils] {config_path} exists")
-	config = toml.load(open( config_path, 'r'))
-else:
-	print( f"[utils] secrets -> {st.secrets}" )
-	config = dict(st.secrets.items())
-print( f"[utils] config -> {config}")
-for k in ['name', 'authentication_status', 'username' ]:
-	st.session_state[k] = None
+# config_path = '.streamlit/secrets.toml'
+# if os.path.exists(config_path):
+# 	print(f"[utils] {config_path} exists")
+# 	config = toml.load(open( config_path, 'r'))
+# else:
+# 	print( f"[utils] secrets -> {st.secrets}" )
+# 	config = dict(st.secrets.items())
+# print( f"[utils] config -> {config}")
+# for k in ['name', 'authentication_status', 'username' ]:
+# 	st.session_state[k] = None
 
-openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
-os.environ["OPENAI_API_KEY"] = openai.api_key
+# openai.api_key = os.environ.get("OPENAI_API_KEY") or config["settings"]["OPENAI_API_KEY"]
+# os.environ["OPENAI_API_KEY"] = openai.api_key
 ########### ==================== #############
+
+from openai import OpenAI as OpenAIClient
+client = OpenAIClient()
 
 def split( in_file_path:str, length:int=10) -> list:
 	"""
@@ -57,11 +61,12 @@ def split( in_file_path:str, length:int=10) -> list:
 	n_segments = math.ceil( len(sound) / duration)
 	output_file_paths = []
 	for i in range(n_segments):
+		print(f"i -> {i}")
 		segment = sound[  i*duration: (i+1)*duration]
 		out_file_path = f"{dirname}/{basename}_{i}.{ext}"
-		if os.path.exists(out_file_path):
-			print(f"Output file path {out_file_path} already exists. Will skip this file.")
-			continue
+		# if os.path.exists(out_file_path):
+		# 	print(f"Output file path {out_file_path} already exists. Will skip this file.")
+		# 	continue
 		try:
 			segment.export( out_file_path, format=ext_format)
 			print(f"output file path -> {out_file_path}")
@@ -100,7 +105,7 @@ def get_summarize_chain():
 
 	SUMMARY: '''
 	sum_prompt = PromptTemplate(template = sum_template, input_variables=["text", "functions"])
-	sum_llm = OpenAI(temperature=0, max_tokens = 1024)
+	sum_llm = OpenAI(temperature=0, model="gpt-3.5-turbo-instruct", max_tokens = 1024)
 	# chain = load_qa_with_sources_chain( qa_llm, prompt = qa_prompt, document_variable_name = "context", chain_type="stuff")
 	# chain = load_summarize_chain( sum_llm, prompt = sum_prompt, chain_type="map_reduce", return_intermediate_steps=True)
 	chain = load_summarize_chain( sum_llm, prompt = sum_prompt, chain_type="stuff")
@@ -119,7 +124,7 @@ def get_rewrite_chain():
 	Rewrite:'''
 
 	rewrite_prompt = PromptTemplate(template = rewrite_template, input_variables=["paragraph", "functions"])
-	rewrite_llm = OpenAI(temperature=0, max_tokens = 1024)
+	rewrite_llm = OpenAI( temperature=0, model="gpt-3.5-turbo-instruct", max_tokens = 1024)
 
 	# chain = load_qa_with_sources_chain( qa_llm, prompt = qa_prompt, document_variable_name = "context", chain_type="stuff")
 	rewrite_chain = LLMChain( llm=rewrite_llm, prompt = rewrite_prompt)
@@ -151,11 +156,12 @@ def sound2txt( audio_file_path, transcript_file_path: str):
 	"""
 	with open( audio_file_path, "rb") as audio_file:
 		try:
-			transcript = openai.Audio.transcribe("whisper-1", audio_file)
+			# transcript = openai.Audio.transcribe("whisper-1", audio_file)
+			transcript = client.audio.transcriptions.create( model="whisper-1", file=audio_file)
 		except openai.error.InvalidRequestError:
-			print( f"InvalidRequestError: {sound_file_path}")
+			print( f"InvalidRequestError: {audio_file_path}")
 		with open( transcript_file_path, "w") as f:
-			f.write(transcript['text'])
+			f.write(transcript.text)
 		return transcript
 	
 
